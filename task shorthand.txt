@@ -1,0 +1,38 @@
+1. Design and execute experiments to evaluate PRSH
+Analyse how k changes behaviour
+Analyse how changing mutation function changes behaviour for set k
+
+
+2. Extend PRSH - optional
+Improve the hill climb, gradient descent?
+
+
+Notes on both:
+- design appropriate experiments 
+- informative visualisations
+- appropriate statistical tests
+
+PRSH description:
+PRSH = adpative PRZI
+PRZI s parameter = strategy, can behave like SHVR, ZIC, GVWY (-1 <= s <= 1)
+Adjusts this by simple, inefficient, stochastic hill climb
+PRSH k parameter = number of different s's tried on each pass
+PRSH mutation function = applied to s which made most profit, gives similar, mutated values of s for next pass
+
+Statistical testing notes:
+Simplifying assumptions - IBMs one-in-many vs balanced-group
+Stochastic so need to ensure sufficient evidence - multiple sesions
+Supply and demand schedules - static? IBM mostly static, pairwise comparisons
+
+Extending PRSH notes:
+Multi-armed bandits
+Gradient descent? 
+
+Metrics for comparison:
+- profit
+- profit per second
+- profit per trade
+- margin (profit as percentage of limit)
+
+
+IEEE format, not more than 8 pages, including everything
