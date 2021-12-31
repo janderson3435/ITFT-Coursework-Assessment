@@ -2,6 +2,9 @@
 Analyse how k changes behaviour
 Analyse how changing mutation function changes behaviour for set k
 
+Default function decides new s by adding Gaussian noise
+Change to uniform
+change so half of values look up, half look down. 
 
 2. Extend PRSH - optional
 Improve the hill climb, gradient descent?
@@ -27,6 +30,10 @@ Supply and demand schedules - static? IBM mostly static, pairwise comparisons
 Extending PRSH notes:
 Multi-armed bandits
 Gradient descent? 
+Bayesian bandits 
+
+Case of full feedback bandits?
+Random process rewards?
 
 Metrics for comparison:
 - profit
@@ -36,3 +43,6 @@ Metrics for comparison:
 
 
 IEEE format, not more than 8 pages, including everything
+
+DONE EXPLORATION OF PRSH, TODO WRITEUP
+TODO EXTEND PRSH

@@ -800,17 +800,6 @@ class Trader_PRZI(Trader):
 
 class Trader_PRZI_SHC(Trader):
 
-
-    # how to mutate the strategy values when hill-climbing
-    def mutate_strat(self, s):
-        sdev = 0.05
-        newstrat = s
-        while newstrat == s:
-            newstrat = s + random.gauss(0.0, sdev)
-            newstrat = max(-1.0, min(1.0, newstrat))
-        return newstrat
-
-
     def strat_str(self):
         # pretty-print a string summarising this trader's strategies
         string = 'PRSH: %s active_strat=[%d]:\n' % (self.tid, self.active_strat)
@@ -829,12 +818,12 @@ class Trader_PRZI_SHC(Trader):
         # strat * direction = -1 = > GVWY; =0 = > ZIC; =+1 = > SHVR
 
         verbose = False
-
+        
         Trader.__init__(self, ttype, tid, balance, time)
-        self.theta0 = 100           # threshold-function limit value
+        self.theta0 = 100         # threshold-function limit value
         self.m = 4                  # tangent-function multiplier
-        self.k = 4                  # number of hill-climbing points (cf number of arms on a multi-armed-bandit)
-        self.strat_wait_time = 900  # how many secs do we give any one strat before switching? todo: make this randomized withn some range
+        self.k = PRSH_k                  # number of hill-climbing points (cf number of arms on a multi-armed-bandit)
+        self.strat_wait_time = 60  # how many secs do we give any one strat before switching? todo: make this randomized withn some range
         self.strat_range_min = 0.75 # lower-bound on randomly-assigned strategy-value
         self.strat_range_max = 0.75 # upper-bound on randomly-assigned strategy-value
         self.active_strat = 0       # which of the k strategies are we currently playing? -- start with 0
@@ -845,6 +834,7 @@ class Trader_PRZI_SHC(Trader):
         self.strats=[]              # strategies awaiting initialization
         self.pmax = None            # this trader's estimate of the maximum price the market will bear
         self.pmax_c_i = math.sqrt(random.randint(1,10))  # multiplier coefficient when estimating p_max
+        self.mutate_strat = PRSH_mutate_strat  # how to mutate the strategy values when hill-climbing
 
         for s in range(0, self.k):
             # initialise each of the strategies in sequence
@@ -856,7 +846,7 @@ class Trader_PRZI_SHC(Trader):
             if s == 0:
                 strategy = random.uniform(self.strat_range_min, self.strat_range_max)
             else:
-                strategy = self.mutate_strat(self.strats[0]['stratval'])     # mutant of strats[0]
+                strategy = self.mutate_strat(self.strats[0]['stratval'], self.k)     # mutant of strats[0]
             self.strats.append({'stratval': strategy, 'start_t': start_time,
                                 'profit': profit, 'pps': profit_per_second, 'lut_bid': lut_bid, 'lut_ask': lut_ask})
 
@@ -1145,7 +1135,6 @@ class Trader_PRZI_SHC(Trader):
     def respond(self, time, lob, trade, verbose):
 
         shc_algo = 'basic'
-
         # "basic" is a very basic form of stochastic hill-cliber (SHC) that v easy to understand and to code
         # it cycles through the k different strats until each has been operated for at least eval_time seconds
         # but a strat that does nothing will get swapped out if it's been running for no_deal_time without a deal
@@ -1164,7 +1153,6 @@ class Trader_PRZI_SHC(Trader):
                 s['pps'] = s['profit'] / pps_time
             else:
                 s['pps'] = 0.0
-
 
         if shc_algo == 'basic':
 
@@ -1246,7 +1234,7 @@ class Trader_PRZI_SHC(Trader):
                 
                 # now replicate and mutate elite into all the other strats
                 for s in range(1, self.k):    # note range index starts at one not zero
-                    self.strats[s]['stratval'] = self.mutate_strat(self.strats[0]['stratval'])
+                    self.strats[s]['stratval'] = self.mutate_strat(self.strats[0]['stratval'], self.k)
                     self.strats[s]['start_t'] = time
                     self.strats[s]['profit'] = 0.0
                     self.strats[s]['pps'] = 0.0
@@ -1971,7 +1959,7 @@ if __name__ == "__main__":
     tdump=open('avg_balance.csv','w')
 
     trial = 1
-
+'''
     while trial < (n_trials+1):
         trial_id = 'sess%04d' % trial
 
@@ -1984,8 +1972,27 @@ if __name__ == "__main__":
         tdump.flush()
         trial = trial + 1
 
-    tdump.close()
+    tdump.close()'''
+################# JA additional/moved functions for PRSH coursework ###################
+PRSH_k = 4 # default k value
 
+def PRSH_mutate_strat(s , k): # default mutation strat # added k parameter that is only used in more complicated functions, allows easy switching
+    sdev = 0.05
+    newstrat = s
+    while newstrat == s:
+        newstrat = s + random.gauss(0.0, sdev)  # 
+        newstrat = max(-1.0, min(1.0, newstrat)) # clipping to within correct range
+    return newstrat
+
+def set_PRSH_parameters(k1 = PRSH_k, mutate1 = PRSH_mutate_strat):
+    global PRSH_k, PRSH_mutate_strat
+    PRSH_k = k1
+    PRSH_mutate_strat = mutate1
+
+
+
+set_PRSH_parameters(PRSH_k, PRSH_mutate_strat)
+#################################################################################
     # run a sequence of trials that exhaustively varies the ratio of four trader types
     # NB this has weakness of symmetric proportions on buyers/sellers -- combinatorics of varying that are quite nasty
     #
