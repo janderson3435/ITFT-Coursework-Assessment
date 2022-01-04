@@ -21,6 +21,7 @@ PRZI s parameter = strategy, can behave like SHVR, ZIC, GVWY (-1 <= s <= 1)
 Adjusts this by simple, inefficient, stochastic hill climb
 PRSH k parameter = number of different s's tried on each pass
 PRSH mutation function = applied to s which made most profit, gives similar, mutated values of s for next pass
+Currently individually tests each s for set amount of time, keep/mutate strat with higher profit
 
 Statistical testing notes:
 Simplifying assumptions - IBMs one-in-many vs balanced-group
@@ -28,9 +29,14 @@ Stochastic so need to ensure sufficient evidence - multiple sesions
 Supply and demand schedules - static? IBM mostly static, pairwise comparisons
 
 Extending PRSH notes:
-Multi-armed bandits
+Multi-armed bandits - k arms
 Gradient descent? 
-Bayesian bandits 
+Bayesian bandits - drawn from known distribution? - could be normal as more likely to be mixture of two 
+Greedy epsilon? Take first strat with profit rather than try all
+Thompson sampling? - fake prior
+epsilon-greedy, softmax, or upper confidence bound (UCB)
+
+Currently does uniform exploration - explores arms at same rate and pick best
 
 Case of full feedback bandits?
 Random process rewards?
@@ -44,5 +50,7 @@ Metrics for comparison:
 
 IEEE format, not more than 8 pages, including everything
 
-DONE EXPLORATION OF PRSH, TODO WRITEUP
-TODO EXTEND PRSH
+NOTES:
+
+talk about other parameters changed to accomodate k changes e.g why k = 10 is limit if giving 60 secs per strategy
+could change the parameters to the mutation function (e.g step on fixed step)	
