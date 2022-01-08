@@ -54,3 +54,10 @@ NOTES:
 
 talk about other parameters changed to accomodate k changes e.g why k = 10 is limit if giving 60 secs per strategy
 could change the parameters to the mutation function (e.g step on fixed step)	
+
+
+greedy epsilon algo:
+
+- at each timestep, chance (eps) to choose algo at random
+- otherwise pick algo with highest profit 
+- keep time elapsed on each algo? 

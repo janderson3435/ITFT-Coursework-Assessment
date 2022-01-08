@@ -337,7 +337,7 @@ class PRSH2(Trader):
     # do we need to dump one arm and generate a new one? (i.e., both/all arms have been evaluated enough)
     def respond(self, time, lob, trade, verbose):
 
-        #shc_algo = 'basic'
+        
 
          # "basic" is a very basic form of stochastic hill-cliber (SHC) that v easy to understand and to code
         # it cycles through the k different strats until each has been operated for at least eval_time seconds
@@ -347,9 +347,9 @@ class PRSH2(Trader):
         # then all counters are reset, and this is repeated indefinitely
         # todo: add in other shc_algo that are cleverer than this,
         # e.g. inspired by multi-arm-bandit algos like like epsilon-greedy, softmax, or upper confidence bound (UCB)
-
+        shc_algo = 'basic'
         shc_algo = 'softmax'
-
+        shc_algo = 'eps-greedy'
         verbose = False
 
         # first update each strategy's profit-per-second value -- this is the "fitness" of each strategy
@@ -440,8 +440,86 @@ class PRSH2(Trader):
                 self.strats[0]['start_t'] = time
                 self.strats[0]['profit'] = 0.0
                 self.strats[0]['pps'] = 0.0   
+
+#########################################################
+
+        elif shc_algo == 'epsilon-greedy':
+            eps = 0.05  # tunable parameter for deciding whether we choose algorithm at random or algorithm with highest profit
+        
+            s = self.active_strat
+            time_elapsed = time - self.last_strat_change_time
+            if time_elapsed > self.strat_wait_time:
+                # we have waited long enough: swap to another strategy
+
+                new_strat = s + 1
+                if new_strat > self.k - 1:
+                    new_strat = 0
+
+                self.active_strat = new_strat
+                self.last_strat_change_time = time
+
+                if verbose:
+                    print('t=%f %s PRSH respond: strat[%d] elapsed=%f; wait_t=%f, switched to strat=%d' %
+                          (time, self.tid, s, time_elapsed, self.strat_wait_time, new_strat))
+
+            # code below here deals with creating a new set of k-1 mutants from the best of the k strats
+            for s in self.strats:
+                # assume that all strats have had long enough, and search for evidence to the contrary
+                all_old_enough = True
+                lifetime = time - s['start_t']
+                if lifetime < self.strat_eval_time:
+                    all_old_enough = False
+                    break
+
+            if all_old_enough:
+                p = random.randint(0, 1)
+                strats_sorted = sorted(self.strats, key = lambda k: k['pps'], reverse = True)
+                if p < eps:
+                    # choose strat at random
+                    arm = random.randint(0, k)
+                    # swap chosen strat into position 0
+                    strats_sorted[0] = strats_sorted[arm]
+                    # don't need to keep old strat as it will be mutated away
+                else:
+                    # choose highest profit
+                    # strats_sorted = self.strats     # use this as a control: unsorts the strats, gives pure random walk.
+
+                    # if the difference between the top two strats is too close to call then flip a coin
+                    # this is to prevent the same good strat being held constant simply by chance cos it is at index [0]
+                    prof_diff = strats_sorted[0]['profit'] - strats_sorted[1]['profit']
+                    if abs(prof_diff) < self.profit_epsilon / 100:          # divide by 100 since softmax reduces range to 0, 1
+                        # they're too close to call, so just flip a coin
+                        best_strat = random.randint(0, 1)
+                    elif prof_diff > 0:
+                        best_strat = 0
+                    else:
+                        best_strat = 1
+
+                    if best_strat == 1:
+                        # need to swap strats[0] and strats[1]
+                        tmp_strat = strats_sorted[0]
+                        strats_sorted[0] = strats_sorted[1]
+                        strats_sorted[1] = tmp_strat
+
+                    # the sorted list of strats replaces the existing list
+                    self.strats = strats_sorted
+
+                # at this stage, strats_sorted[0] is our newly-chosen elite-strat, about to replicate
+                # record it
+                
+                # now replicate and mutate elite into all the other strats
+                for s in range(1, self.k):    # note range index starts at one not zero
+                    self.strats[s]['stratval'] = self.mutate_strat(self.strats[0]['stratval'], self.k)
+                    self.strats[s]['start_t'] = time
+                    self.strats[s]['profit'] = 0.0
+                    self.strats[s]['pps'] = 0.0
+                # and then update (wipe) records for the elite
+                self.strats[0]['start_t'] = time
+                self.strats[0]['profit'] = 0.0
+                self.strats[0]['pps'] = 0.0   
+
 ##############################################################################################################
-        if shc_algo == 'basic':
+        elif shc_algo == 'basic':
 
             if verbose:
                 # print('t=%f %s PRSH respond: shc_algo=%s eval_t=%f max_wait_t=%f' %
