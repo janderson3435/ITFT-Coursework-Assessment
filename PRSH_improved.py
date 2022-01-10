@@ -25,7 +25,7 @@ class PRSH2(Trader):
         Trader.__init__(self, ttype, tid, balance, time)
         self.theta0 = 100         # threshold-function limit value
         self.m = 4                  # tangent-function multiplier
-        self.k = PRSH_k                  # number of hill-climbing points (cf number of arms on a multi-armed-bandit)
+        self.k = 3                  # number of hill-climbing points (cf number of arms on a multi-armed-bandit)
         self.strat_wait_time = 60  # how many secs do we give any one strat before switching? todo: make this randomized withn some range
         self.strat_range_min = 0.75 # lower-bound on randomly-assigned strategy-value
         self.strat_range_max = 0.75 # upper-bound on randomly-assigned strategy-value

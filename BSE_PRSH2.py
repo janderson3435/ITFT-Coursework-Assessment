@@ -1604,8 +1604,8 @@ class PRSH2(Trader):
         # then all counters are reset, and this is repeated indefinitely
         # todo: add in other shc_algo that are cleverer than this,
         # e.g. inspired by multi-arm-bandit algos like like epsilon-greedy, softmax, or upper confidence bound (UCB)
-        shc_algo = 'basic'
-        shc_algo = 'softmax'
+        #shc_algo = 'basic'
+        #shc_algo = 'softmax'
         shc_algo = 'eps-greedy'
         verbose = False
 
